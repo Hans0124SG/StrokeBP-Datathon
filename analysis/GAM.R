@@ -68,7 +68,10 @@ test <- df[test_index,]
 # afib+hyperlipidemia+diabetes+hypertension+cor_art_d+peri_vasc_d+
 # car_art_stent+smoking+tia+heparin_iv+antihypertensive+antiplatelets+anticoag
 model <- gam(hospital_expire_flag ~ s(age)
-             +ethnicity+gender+glucose_min+creatinine_min+antihtx+inpatient_stroke+s(avg_mbp_ni)
+             +ethnicity+gender+glucose_min+creatinine_min+
+               # antihtx+inpatient_stroke+afib+hyperlipidemia+diabetes+hypertension+
+               # cor_art_d+peri_vasc_d+car_art_stent+smoking+tia+heparin_iv+antiplatelets+anticoag+
+             s(avg_mbp_ni)
              , data=train,family = binomial(link='logit'))
 summary <- summary(model)
 summary

@@ -3,22 +3,22 @@
     "path": "~/Desktop/PhD study/StrokeBP/datathon/tableone.R",
     "project_path": null,
     "type": "r_source",
-    "hash": "3795480587",
+    "hash": "0",
     "contents": "",
     "dirty": false,
     "created": 1607792943297.0,
     "source_on_save": false,
     "relative_order": 2,
     "properties": {
-        "cursorPosition": "25,0",
-        "scrollLine": "0"
+        "cursorPosition": "38,0",
+        "scrollLine": "12"
     },
     "folds": "",
-    "lastKnownWriteTime": 1607794323,
+    "lastKnownWriteTime": 1607800197,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1607794323416,
+    "last_content_update": 1607800197079,
     "read_only": false,
     "read_only_alternatives": []
 }
