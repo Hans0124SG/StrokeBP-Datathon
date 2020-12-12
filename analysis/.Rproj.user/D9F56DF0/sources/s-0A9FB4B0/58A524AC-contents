@@ -1,0 +1,95 @@
+```{r}
+library(mgcv)
+library(oddsratio)
+library(ggplot2)
+library(ROCR)
+library(dplyr)
+library(mice)
+library(caret)
+```
+
+```{r}
+logistic <- function(x) 1/(1+exp(-x))
+set.seed(123)
+setwd("~/Desktop/PhD study/Gout/analysis")
+df <- read.csv('df_final.csv', stringsAsFactors = TRUE)
+df <- df[which(df$ip_alos >= 0),]
+categoricals <- c('ae_race', 'ae_gender', 'onult', 'Grouped_CVD',
+                 'Grouped_cancer', 'Grouped_diabetes', 'Grouped_CKD', 'Grouped_others','ae_dg')
+continuous <- c('ae_age', 'ipv_last_year', 'aev_last_year','op_follow_up', 'wbc_ip','cre_ip','glu_ip','ip_alos')
+df[categoricals] = lapply(df[categoricals], factor)
+df <- df[c(categoricals, continuous)]
+# train_index <- sample(1:nrow(df), 0.8 * nrow(df))
+# test_index <- setdiff(1:nrow(df), train_index)
+# train <- df[train_index,]
+# test <- df[test_index,]
+```
+
+```{r}
+# md.pattern(df[c(categoricals, continuous)])
+tempData <- mice(df,m=10,maxit=50,meth='pmm',seed=500)
+imputed_df <- complete(tempData,1)
+# densityplot(tempData)
+```
+
+```{r}
+model <- gam(ip_alos ~ ae_race+ae_gender+onult
+             +Grouped_CVD+Grouped_cancer+Grouped_diabetes+Grouped_CKD+Grouped_others
+             +s(ae_age)+s(wbc_ip)+s(cre_ip)+s(glu_ip)
+             +s(op_follow_up,k=7)+s(ipv_last_year,k=9)+s(aev_last_year)
+             , data=imputed_df,family = gaussian)
+summary <- summary(model)
+summary
+```
+
+```{r, fig.width=2, fig.height=2}
+train_predictions = logistic(predict.gam(model, imputed_df))
+train_label = imputed_df$los_more_than_2
+train_pred <- prediction(as.numeric(train_predictions), as.numeric(train_label))
+train_perf <- performance(train_pred, measure = "tpr", x.measure = "fpr")
+plot(train_perf@x.values[[1]], train_perf@y.values[[1]], col="orange", mgp=c(1.5,0,0),
+     xlab = "False Positive Rate",
+     ylab = "True Positive Rate",
+     cex.lab=0.8, xaxt="n",yaxt="n",type="l")
+axis(1, at = seq(0, 1, by = 0.1), las=0, cex.axis=0.5, mgp=c(0,0.2,0))
+axis(2, at = seq(0, 1, by = 0.1), las=1, cex.axis=0.5, mgp=c(0,0.8,0))
+abline(a = 0, b = 1, col = 'blue', lty=2)
+train_auc_ROCR <- performance(train_pred, measure = "auc")@y.values[[1]]
+
+legend("bottomright",
+       paste("Train ", round(as.numeric(train_auc_ROCR), digits = 2)),
+       col = c("orange"),
+       lty = c(1), cex=0.7)
+```
+```{r}
+plot1 <- plot_gam(model, pred='ae_age',
+                        xlab = 'Age',
+                        ylab = 'Partial effect')
+
+plot2 <- plot_gam(model, pred='op_follow_up',
+                        xlab = '# of outpatient follow-ups with gout diagnosis',
+                        ylab = 'Partial effect')
+
+plot3 <- plot_gam(model, pred='aev_last_year',
+                        xlab = '# of A&E visits',
+                        ylab = 'Partial effect')
+
+plot4 <- plot_gam(model, pred='ipv_last_year',
+                        xlab = '# of hospital stays with primary diagnosis as gout',
+                        ylab = 'Partial effect')
+
+plot5 <- plot_gam(model, pred='wbc_ip',
+                        xlab = 'White blood cell count',
+                        ylab = 'Partial effect')
+
+plot6 <- plot_gam(model, pred='cre_ip',
+                        xlab = 'Creatinine',
+                        ylab = 'Partial effect')
+
+plot7 <- plot_gam(model, pred='glu_ip',
+                        xlab = 'Blood glucose',
+                        ylab = 'Partial effect')
+
+multiplot(plot5, plot1, plot2, plot6, plot3, plot4, plot7, cols=3)
+```
+
