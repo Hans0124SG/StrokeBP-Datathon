@@ -1,3 +1,4 @@
+drop table flgcs;
 create table flgcs as (
 with raw_gcs as (
 select cohort.hadm_id, cohort.admittime, gcs.*

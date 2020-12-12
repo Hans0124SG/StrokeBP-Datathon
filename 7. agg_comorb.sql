@@ -1,3 +1,4 @@
+drop table agg_comorb;
 create table agg_comorb as (
 select subject_id, hadm_id, sum(atrial_fibrill) as afib,
 sum(hyperlipidemia) as hyperlipidemia, sum(diabetes) as diabetes, sum(hypertension) as hypertension,

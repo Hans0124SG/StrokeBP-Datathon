@@ -23,30 +23,27 @@ d_icd_procedures using (icd_code)
 where icd_code = '3974'
 or icd_code ilike '03CG%'
 ),
-aspirin as (
-select *, charttime - admittime as med_time 
-from cohort
-join emar using (hadm_id)
-where (medication ilike '%aspirin%'
-or medication ilike '%clopidogrel%')
-and charttime - admittime  > interval '24' hour
-),
 aspirin_pred as (
-select *, starttime - admittime as med_time 
+select *, starttime - intime as med_time 
 from cohort
 join prescriptions using (hadm_id)
 where (drug ilike '%aspirin%'
 or drug ilike '%clopidogrel%')
 and dose_val_rx = '300'
-and starttime - admittime > interval '24' hour
+and starttime - intime > interval '24' hour
+),
+inpatient_stroke as (
+select distinct on (stay_id) stay_id, med_time from aspirin_pred
+order by stay_id, starttime
 )
-select cohort.*, case when age > 89 then 89 else age end as age
+select cohort.*, case when age > 89 then 89 else age end as age, case when med_time is not null then 1 else 0 end as inpatient_stroke
 from cohort
 join age using (hadm_id)
+left join inpatient_stroke on cohort.stay_id = inpatient_stroke.stay_id
 where hadm_id not in (select distinct hadm_id from tpa)
 and hadm_id not in (SELECT DISTINCT hadm_id from tmb)
-and hadm_id not in (SELECT DISTINCT hadm_id from aspirin)
-and hadm_id not in (SELECT DISTINCT hadm_id from aspirin_pred)
+-- and hadm_id not in (SELECT DISTINCT hadm_id from aspirin)
+-- and hadm_id not in (SELECT DISTINCT hadm_id from aspirin_pred)
 and age >= 18
 order by subject_id
 )
