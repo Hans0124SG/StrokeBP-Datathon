@@ -147,8 +147,8 @@ legend("bottomright",
 dev.off()
 
 plot_object1 <- plot_gam(model, pred='avg_mbp_ni',
-                         xlab = 'Avg MBP',
-                         ylab = 'Partial effect') + xlim(70, 105) + ylim(-1,1)
+                         xlab = 'Avg MBP Non-invasive',
+                         ylab = 'Partial effect')
 or_object1 <- or_gam(
   data = train, model = model,
   pred = "avg_mbp_ni", values = c(80,90)
@@ -160,4 +160,4 @@ plot1 <- insert_or(plot_object1, or_object1,
                    arrow_col = "red",
                    arrow_yloc = 1
 )
-plot_object1
+plot_object1 + xlim(70, 105) + ylim(-1,1) + geom_hline(yintercept=0, linetype="dashed", color = "red") + geom_vline(xintercept=87, linetype="dashed", color = "purple") + geom_vline(xintercept=100, linetype="dashed", color = "purple")
