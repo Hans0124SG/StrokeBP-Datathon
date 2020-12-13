@@ -35,15 +35,15 @@ df$antihypertensive_non_iv[is.na(df$antihypertensive_non_iv)] <- 0
 df$inotropes[is.na(df$inotropes)] <- 0
 df['antihtx_normal'] = as.numeric(unlist(df[c('antihypertensive_iv_non_tight_control')])) + as.numeric(unlist(df['antihypertensive_non_iv']))
 
-df$antihtx <- with(df, ifelse(as.numeric(antihypertensive_iv_tight_control)>1, 2, ifelse(as.numeric(antihtx_normal)>1, 1, 0)))
+df$antihtx <- with(df, ifelse(as.numeric(antihypertensive_iv_tight_control)>0, 2, ifelse(as.numeric(antihtx_normal)>0, 1, 0)))
 
-df[c('afib', 'hyperlipidemia', 'diabetes', 'hypertension',
-     'cor_art_d', 'peri_vasc_d', 'car_art_stent','smoking',
-     'tia', 'heparin_iv', 'antiplatelets',
-     'anticoag', 'inotropes')] = apply(df[c('afib', 'hyperlipidemia', 'diabetes', 'hypertension',
-                   'cor_art_d', 'peri_vasc_d', 'car_art_stent','smoking',
-                   'tia', 'heparin_iv', 'antiplatelets',
-                   'anticoag', 'inotropes')], c(1,2), cap)
+# df[c('afib', 'hyperlipidemia', 'diabetes', 'hypertension',
+#      'cor_art_d', 'peri_vasc_d', 'car_art_stent','smoking',
+#      'tia', 'heparin_iv', 'antiplatelets',
+#      'anticoag', 'inotropes')] = apply(df[c('afib', 'hyperlipidemia', 'diabetes', 'hypertension',
+#                    'cor_art_d', 'peri_vasc_d', 'car_art_stent','smoking',
+#                    'tia', 'heparin_iv', 'antiplatelets',
+#                    'anticoag', 'inotropes')], c(1,2), cap)
 
 categoricals <- c('ethnicity', 'gender', 'hospital_expire_flag',
                   'afib', 'hyperlipidemia', 'diabetes', 'hypertension',
@@ -69,9 +69,15 @@ test <- df[test_index,]
 # car_art_stent+smoking+tia+heparin_iv+antihypertensive+antiplatelets+anticoag
 model <- gam(hospital_expire_flag ~ 
                s(age)+gender+first_glu+first_cre+first_gcs+hypertension+inpatient_stroke+
-               # afib+hyperlipidemia+diabetes+inotropes+ethnicity
-               # cor_art_d+peri_vasc_d+car_art_stent+smoking+tia+heparin_iv+antiplatelets+anticoag+
-             s(avg_mbp_ni)
+               afib+hyperlipidemia+diabetes+inotropes+ethnicity+
+               cor_art_d+peri_vasc_d+car_art_stent+smoking+tia+heparin_iv+antiplatelets+anticoag+
+               s(min_sbp)
+             , data=train,family = binomial(link='logit'))
+summary <- summary(model)
+summary
+
+model <- gam(hospital_expire_flag ~ 
+               age+first_glu+first_cre+first_gcs+ethnicity+hyperlipidemia+s(min_sbp)
              , data=train,family = binomial(link='logit'))
 summary <- summary(model)
 summary
@@ -153,8 +159,8 @@ legend("bottomright",
 ### GAM plots
 # dev.off()
 
-plot_object1 <- plot_gam(model, pred='avg_mbp_ni',
-                         xlab = 'Avg MBP',
+plot_object1 <- plot_gam(model, pred='min_sbp',
+                         xlab = 'Min SBP',
                          ylab = 'Partial effect')
 # or_object1 <- or_gam(
 #   data = train, model = model,
@@ -166,5 +172,6 @@ plot_object1 <- plot_gam(model, pred='avg_mbp_ni',
 #                    arrow_length = 0.02,
 #                    arrow_col = "red",
 #                    arrow_yloc = 1)
-plot_object1 + xlim(70,120) + ylim(-1.5,1.5) + geom_hline(yintercept=0, linetype="dashed", color = "red") + 
-geom_vline(xintercept=91, linetype="dashed", color = "purple") + geom_vline(xintercept=98, linetype="dashed", color = "purple")
+plot_object1 + xlim(60,180) + ylim(-1.5,1.5) + geom_hline(yintercept=0, linetype="dashed", color = "red") + 
+  geom_vline(xintercept=115, linetype="dashed", color = "purple") + geom_vline(xintercept=130, linetype="dashed", color = "purple")
+

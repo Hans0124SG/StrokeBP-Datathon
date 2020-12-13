@@ -6,10 +6,10 @@ join iv_meds using (hadm_id)
 where iv_starttime - intime <= interval '6' hour
 )
 select subject_id, hadm_id, stay_id
-, sum(heparin_iv) as heparin_iv
-, sum(antihypertensive_iv_non_tight_control) as antihypertensive_iv_non_tight_control
-, sum(antihypertensive_iv_tight_control) as antihypertensive_iv_tight_control
-, sum(inotropes) as inotropes
+, max(heparin_iv) as heparin_iv
+, max(antihypertensive_iv_non_tight_control) as antihypertensive_iv_non_tight_control
+, max(antihypertensive_iv_tight_control) as antihypertensive_iv_tight_control
+, max(inotropes) as inotropes
 from temp
 group by 1,2,3
 )

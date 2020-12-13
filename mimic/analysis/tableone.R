@@ -30,13 +30,13 @@ df['antihtx_normal'] = as.numeric(unlist(df[c('antihypertensive_iv_non_tight_con
 
 df$antihtx <- with(df, ifelse(as.numeric(antihypertensive_iv_tight_control)>1, 2, ifelse(as.numeric(antihtx_normal)>1, 1, 0)))
 
-df[c('afib', 'hyperlipidemia', 'diabetes', 'hypertension',
-     'cor_art_d', 'peri_vasc_d', 'car_art_stent','smoking',
-     'tia', 'heparin_iv', 'antiplatelets',
-     'anticoag', 'inotropes')] = apply(df[c('afib', 'hyperlipidemia', 'diabetes', 'hypertension',
-                                            'cor_art_d', 'peri_vasc_d', 'car_art_stent','smoking',
-                                            'tia', 'heparin_iv', 'antiplatelets',
-                                            'anticoag', 'inotropes')], c(1,2), cap)
+# df[c('afib', 'hyperlipidemia', 'diabetes', 'hypertension',
+#      'cor_art_d', 'peri_vasc_d', 'car_art_stent','smoking',
+#      'tia', 'heparin_iv', 'antiplatelets',
+#      'anticoag', 'inotropes')] = apply(df[c('afib', 'hyperlipidemia', 'diabetes', 'hypertension',
+#                                             'cor_art_d', 'peri_vasc_d', 'car_art_stent','smoking',
+#                                             'tia', 'heparin_iv', 'antiplatelets',
+#                                             'anticoag', 'inotropes')], c(1,2), cap)
 
 categoricals <- c('ethnicity', 'gender', 'hospital_expire_flag',
                   'afib', 'hyperlipidemia', 'diabetes', 'hypertension',

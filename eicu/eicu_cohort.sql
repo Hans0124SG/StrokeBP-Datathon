@@ -22,7 +22,8 @@ SELECT patientunitstayid
 FROM medication
 WHERE drugname ILIKE '%alteplase%'
 )
-select cohort.*, basic_demographics.hosp_mortality, basic_demographics.icu_los_hours, clean_diagnosis.is_primary from cohort
+select cohort.*, basic_demographics.hosp_mortality, basic_demographics.icu_los_hours, clean_diagnosis.is_primary,
+	case when basic_demographics.age in ('> 89', '>89') then 89 else CAST (basic_demographics.age AS integer) end as correct_age from cohort
 join clean_diagnosis using (patientunitstayid)
 join basic_demographics using (patientunitstayid)
 where ais - hs = 1

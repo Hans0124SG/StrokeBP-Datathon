@@ -6,9 +6,9 @@ join meds using (hadm_id)
 where starttime - intime <= interval '6' hour
 )
 select subject_id, hadm_id, stay_id
-, sum(antiplatelets) as antiplatelets
-, sum(anticoag) as anticoag
-, sum(antihypertensive_non_iv) as antihypertensive_non_iv
+, max(antiplatelets) as antiplatelets
+, max(anticoag) as anticoag
+, max(antihypertensive_non_iv) as antihypertensive_non_iv
 from temp
 group by 1,2,3
 )
