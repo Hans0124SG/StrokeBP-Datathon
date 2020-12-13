@@ -25,6 +25,11 @@ set.seed(123)
 setwd("~/Desktop/PhD study/StrokeBP/datathon/MIMIC/analysis")
 df <- read.csv('MIMIC_dataset_v2.csv', stringsAsFactors = TRUE)
 
+# df$time_to_death <- (as.POSIXct(as.character(df$deathtime), format="%d/%m/%Y %H:%M") -
+#   as.POSIXct(as.character(df$intime), format="%d/%m/%Y %H:%M")) / 24
+
+# write.csv(df, 'mimic_bryce.csv', row.names=FALSE)
+
 df[c('ethnicity')] = apply(df[c('ethnicity')], 1, mergeEth)
 df$heparin_iv[is.na(df$heparin_iv)] <- 0
 df$antihypertensive_iv_non_tight_control[is.na(df$antihypertensive_iv_non_tight_control)] <- 0
@@ -54,11 +59,16 @@ continuous <- c('age','avg_mbp_ni', 'min_mbp_ni', 'max_mbp_ni', 'first_gcs',
                 'avg_mbp', 'min_mbp', 'max_mbp', 'avg_sbp', 'min_sbp', 'max_sbp',
                 'avg_sbp_ni', 'min_sbp_ni', 'max_sbp_ni',
                 'first_glu', 'first_cre')
+
 df[categoricals] = lapply(df[categoricals], factor)
 df <- df[c(categoricals, continuous)]
 
 tempData <- mice(df,m=10,maxit=50,meth='pmm',seed=500)
 df <- complete(tempData,1)
+write.csv(df, 'mimic_imputed.csv', row.names=FALSE)
+
+# setwd("~/Desktop/PhD study/StrokeBP/datathon/MIMIC/analysis")
+# df <- read.csv('mimic_imputed.csv', stringsAsFactors = TRUE)
 
 train_index <- sample(1:nrow(df), 0.8 * nrow(df))
 test_index <- setdiff(1:nrow(df), train_index)
@@ -69,7 +79,7 @@ test <- df[test_index,]
 # car_art_stent+smoking+tia+heparin_iv+antihypertensive+antiplatelets+anticoag
 model <- gam(hospital_expire_flag ~ 
                s(age)+gender+first_glu+first_cre+first_gcs+hypertension+inpatient_stroke+
-               afib+hyperlipidemia+diabetes+inotropes+ethnicity+
+               afib+hyperlipidemia+diabetes+inotropes+ethnicity+antihtx+
                cor_art_d+peri_vasc_d+car_art_stent+smoking+tia+heparin_iv+antiplatelets+anticoag+
                s(min_sbp)
              , data=train,family = binomial(link='logit'))
@@ -77,10 +87,13 @@ summary <- summary(model)
 summary
 
 model <- gam(hospital_expire_flag ~ 
-               age+first_glu+first_cre+first_gcs+ethnicity+hyperlipidemia+s(min_sbp)
+               age+first_glu+first_cre+ethnicity+car_art_stent+hyperlipidemia+s(min_sbp)
              , data=train,family = binomial(link='logit'))
 summary <- summary(model)
 summary
+
+saveRDS(model, "mimic_model.rds")
+model <- readRDS("mimic_model.rds")
 
 train_predictions = logistic(predict.gam(model, train))
 train_label = train$hospital_expire_flag

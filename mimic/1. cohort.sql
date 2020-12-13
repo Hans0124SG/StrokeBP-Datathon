@@ -1,7 +1,7 @@
 drop table cohort;
 create table cohort as (
 with cohort as (
-select distinct on (admissions.subject_id, hadm_id) admissions.*, patients.gender, icustays.stay_id, icustays.intime, icustays.outtime, icustays.los from diagnoses_icd
+select distinct on (admissions.subject_id) admissions.*, patients.gender, icustays.stay_id, icustays.intime, icustays.outtime, icustays.los from diagnoses_icd
 join admissions
 using (hadm_id)
 join icustays
@@ -11,7 +11,7 @@ where icd_code in ('43301', '43311', '43321', '43331', '43381', '43391')
 or icd_code ilike '434%'
 -- or icd_code ilike 'I62%'
 or icd_code ilike 'I63%'
-order by admissions.subject_id, hadm_id, intime asc
+order by admissions.subject_id, intime asc
 ),
 tpa as (
 select * from inputevents

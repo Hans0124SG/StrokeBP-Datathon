@@ -15,8 +15,17 @@ SELECT
   FROM
   pasthistory
   GROUP BY patientunitstayid
+),
+hp as (
+SELECT patientunitstayid, max(CASE WHEN icd9code ilike '%272.4%' OR diagnosisstring ilike '%hyperlipidemia%' THEN 1 ELSE 0 END) as hyperlipidemia
+	FROM diagnosis
+group by 1
 )
-select temp.*, diabetes from temp
+select temp.*, diabetes, hyperlipidemia from temp
 join apachepredvar
+using (patientunitstayid)
+join hp
+using (patientunitstayid)
+join eicu_cohort
 using (patientunitstayid)
 )

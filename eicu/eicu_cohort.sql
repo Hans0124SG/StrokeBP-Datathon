@@ -1,8 +1,9 @@
 drop table eicu_cohort;
 create table eicu_cohort as (
 with cohort as (
-select * from patient
+select distinct on (uniquepid) * from patient
 where apacheadmissiondx = 'CVA, cerebrovascular accident/stroke'
+order by uniquepid, hospitaldischargeyear asc, hospitaldischargetime24
 ),
 clean_diagnosis as (
 select patientunitstayid
