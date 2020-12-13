@@ -1,3 +1,4 @@
+drop table eicu_meds;
 create table eicu_meds as (
 with antihtx as (
 	select patientunitstayid
@@ -7,6 +8,7 @@ with antihtx as (
 	, max(heparin) as heparin
 	, max(epinephrine) as epinephrine
 	, max(vasopressin) as vasopressin
+	, max(phenylephrine) as phenylephrine
 	from pivoted_med
 	where chartoffset < 6*60
 	group by patientunitstayid

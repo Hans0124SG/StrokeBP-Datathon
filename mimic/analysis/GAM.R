@@ -24,7 +24,7 @@ mergeEth <- function(x) if (x == 'WHITE') {
     4
   }
 set.seed(123)
-setwd("~/Desktop/PhD study/StrokeBP/datathon/")
+setwd("~/Desktop/PhD study/StrokeBP/datathon/MIMIC/analysis")
 df <- read.csv('MIMIC_dataset_v2.csv', stringsAsFactors = TRUE)
 
 df[c('ethnicity')] = apply(df[c('ethnicity')], 1, mergeEth)
@@ -52,8 +52,8 @@ categoricals <- c('ethnicity', 'gender', 'hospital_expire_flag',
                   'cor_art_d', 'peri_vasc_d', 'car_art_stent','smoking',
                   'tia', 'heparin_iv', 'antiplatelets',
                   'anticoag', 'antihtx', 'inpatient_stroke')
-continuous <- c('age','avg_mbp_ni', 'min_mbp_ni', 'max_mbp_ni',
-                'avg_mbp', 'min_mbp', 'max_mbp', 'glucose_min', 'creatinine_min')
+continuous <- c('age','avg_mbp_ni', 'min_mbp_ni', 'max_mbp_ni', 'first_gcs',
+                'avg_mbp', 'min_mbp', 'max_mbp', 'first_glu', 'first_cre')
 df[categoricals] = lapply(df[categoricals], factor)
 df <- df[c(categoricals, continuous)]
 
@@ -68,8 +68,8 @@ test <- df[test_index,]
 # afib+hyperlipidemia+diabetes+hypertension+cor_art_d+peri_vasc_d+
 # car_art_stent+smoking+tia+heparin_iv+antihypertensive+antiplatelets+anticoag
 model <- gam(hospital_expire_flag ~ s(age)
-             +ethnicity+gender+glucose_min+creatinine_min+
-               # antihtx+inpatient_stroke+afib+hyperlipidemia+diabetes+hypertension+
+             +ethnicity+gender+first_glu+first_cre+first_gcs+antihtx+inpatient_stroke+
+               # afib+hyperlipidemia+diabetes+hypertension+
                # cor_art_d+peri_vasc_d+car_art_stent+smoking+tia+heparin_iv+antiplatelets+anticoag+
              s(avg_mbp_ni)
              , data=train,family = binomial(link='logit'))
@@ -153,12 +153,12 @@ legend("bottomright",
 ### GAM plots
 # dev.off()
 
-plot_object1 <- plot_gam(model, pred='avg_mbp',
+plot_object1 <- plot_gam(model, pred='avg_mbp_ni',
                          xlab = 'Avg MBP',
                          ylab = 'Partial effect')
 or_object1 <- or_gam(
   data = train, model = model,
-  pred = "avg_mbp", values = c(80,90)
+  pred = "avg_mbp_ni", values = c(80,90)
 )
 
 plot1 <- insert_or(plot_object1, or_object1,
@@ -167,5 +167,5 @@ plot1 <- insert_or(plot_object1, or_object1,
                    arrow_col = "red",
                    arrow_yloc = 1
 )
-plot_object1 + xlim(70, 120) + ylim(-1,1) + geom_hline(yintercept=0, linetype="dashed", color = "red")
+plot_object1 + ylim(-1,1) + geom_hline(yintercept=0, linetype="dashed", color = "red")
 # + geom_vline(xintercept=87, linetype="dashed", color = "purple") + geom_vline(xintercept=100, linetype="dashed", color = "purple")
