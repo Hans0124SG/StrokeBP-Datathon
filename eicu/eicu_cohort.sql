@@ -6,6 +6,7 @@ where apacheadmissiondx = 'CVA, cerebrovascular accident/stroke'
 ),
 clean_diagnosis as (
 select patientunitstayid
+    , max(case when diagnosisstring ILIKE '%ischemic stroke%' and diagnosisPriority = 'Primary' THEN 1 ELSE 0 END) AS is_primary
 	, max(case when diagnosisstring ILIKE '%ischemic stroke%' then 1 else 0 end) as ais
 	, max(case when diagnosisstring ilike '%hemorrhagic stroke%' then 1 else 0 end) as hs
 	from diagnosis
@@ -21,7 +22,7 @@ SELECT patientunitstayid
 FROM medication
 WHERE drugname ILIKE '%alteplase%'
 )
-select cohort.*, basic_demographics.hosp_mortality, basic_demographics.icu_los_hours from cohort
+select cohort.*, basic_demographics.hosp_mortality, basic_demographics.icu_los_hours, clean_diagnosis.is_primary from cohort
 join clean_diagnosis using (patientunitstayid)
 join basic_demographics using (patientunitstayid)
 where ais - hs = 1

@@ -18,10 +18,8 @@ mergeEth <- function(x) if (x == 'WHITE') {
     1
   } else if (x == 'BLACK/AFRICAN AMERICAN') {
     2
-  } else if (x == 'HISPANIC/LATINO') {
-    3
   } else {
-    4
+    3
   }
 set.seed(123)
 setwd("~/Desktop/PhD study/StrokeBP/datathon/MIMIC/analysis")
@@ -34,6 +32,7 @@ df$antihypertensive_iv_tight_control[is.na(df$antihypertensive_iv_tight_control)
 df$antiplatelets[is.na(df$antiplatelets)] <- 0
 df$anticoag[is.na(df$anticoag)] <- 0
 df$antihypertensive_non_iv[is.na(df$antihypertensive_non_iv)] <- 0
+df$inotropes[is.na(df$inotropes)] <- 0
 df['antihtx_normal'] = as.numeric(unlist(df[c('antihypertensive_iv_non_tight_control')])) + as.numeric(unlist(df['antihypertensive_non_iv']))
 
 df$antihtx <- with(df, ifelse(as.numeric(antihypertensive_iv_tight_control)>1, 2, ifelse(as.numeric(antihtx_normal)>1, 1, 0)))
@@ -41,19 +40,20 @@ df$antihtx <- with(df, ifelse(as.numeric(antihypertensive_iv_tight_control)>1, 2
 df[c('afib', 'hyperlipidemia', 'diabetes', 'hypertension',
      'cor_art_d', 'peri_vasc_d', 'car_art_stent','smoking',
      'tia', 'heparin_iv', 'antiplatelets',
-     'anticoag')] = apply(df[c('afib', 'hyperlipidemia', 'diabetes', 'hypertension',
+     'anticoag', 'inotropes')] = apply(df[c('afib', 'hyperlipidemia', 'diabetes', 'hypertension',
                    'cor_art_d', 'peri_vasc_d', 'car_art_stent','smoking',
                    'tia', 'heparin_iv', 'antiplatelets',
-                   'anticoag')], c(1,2), cap)
-
+                   'anticoag', 'inotropes')], c(1,2), cap)
 
 categoricals <- c('ethnicity', 'gender', 'hospital_expire_flag',
                   'afib', 'hyperlipidemia', 'diabetes', 'hypertension',
                   'cor_art_d', 'peri_vasc_d', 'car_art_stent','smoking',
                   'tia', 'heparin_iv', 'antiplatelets',
-                  'anticoag', 'antihtx', 'inpatient_stroke')
+                  'anticoag', 'antihtx', 'inpatient_stroke', 'inotropes')
 continuous <- c('age','avg_mbp_ni', 'min_mbp_ni', 'max_mbp_ni', 'first_gcs',
-                'avg_mbp', 'min_mbp', 'max_mbp', 'first_glu', 'first_cre')
+                'avg_mbp', 'min_mbp', 'max_mbp', 'avg_sbp', 'min_sbp', 'max_sbp',
+                'avg_sbp_ni', 'min_sbp_ni', 'max_sbp_ni',
+                'first_glu', 'first_cre')
 df[categoricals] = lapply(df[categoricals], factor)
 df <- df[c(categoricals, continuous)]
 
@@ -67,9 +67,9 @@ test <- df[test_index,]
 
 # afib+hyperlipidemia+diabetes+hypertension+cor_art_d+peri_vasc_d+
 # car_art_stent+smoking+tia+heparin_iv+antihypertensive+antiplatelets+anticoag
-model <- gam(hospital_expire_flag ~ s(age)
-             +ethnicity+gender+first_glu+first_cre+first_gcs+antihtx+inpatient_stroke+
-               # afib+hyperlipidemia+diabetes+hypertension+
+model <- gam(hospital_expire_flag ~ 
+               s(age)+gender+first_glu+first_cre+first_gcs+hypertension+inpatient_stroke+
+               # afib+hyperlipidemia+diabetes+inotropes+ethnicity
                # cor_art_d+peri_vasc_d+car_art_stent+smoking+tia+heparin_iv+antiplatelets+anticoag+
              s(avg_mbp_ni)
              , data=train,family = binomial(link='logit'))
@@ -156,16 +156,15 @@ legend("bottomright",
 plot_object1 <- plot_gam(model, pred='avg_mbp_ni',
                          xlab = 'Avg MBP',
                          ylab = 'Partial effect')
-or_object1 <- or_gam(
-  data = train, model = model,
-  pred = "avg_mbp_ni", values = c(80,90)
-)
+# or_object1 <- or_gam(
+#   data = train, model = model,
+#   pred = "avg_mbp_ni", values = c(80,90)
+# )
 
-plot1 <- insert_or(plot_object1, or_object1,
-                   or_yloc = 3,
-                   arrow_length = 0.02,
-                   arrow_col = "red",
-                   arrow_yloc = 1
-)
-plot_object1 + ylim(-1,1) + geom_hline(yintercept=0, linetype="dashed", color = "red")
-# + geom_vline(xintercept=87, linetype="dashed", color = "purple") + geom_vline(xintercept=100, linetype="dashed", color = "purple")
+# plot1 <- insert_or(plot_object1, or_object1,
+#                    or_yloc = 3,
+#                    arrow_length = 0.02,
+#                    arrow_col = "red",
+#                    arrow_yloc = 1)
+plot_object1 + xlim(70,120) + ylim(-1.5,1.5) + geom_hline(yintercept=0, linetype="dashed", color = "red") + 
+geom_vline(xintercept=91, linetype="dashed", color = "purple") + geom_vline(xintercept=98, linetype="dashed", color = "purple")

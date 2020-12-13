@@ -12,7 +12,13 @@ max(mbp) as max_mbp,
 avg(mbp) as avg_mbp,
 min(mbp_ni) as min_mbp_ni,
 max(mbp_ni) as max_mbp_ni,
-avg(mbp_ni) as avg_mbp_ni
+avg(mbp_ni) as avg_mbp_ni,
+min(sbp) as min_sbp,
+max(sbp) as max_sbp,
+avg(sbp) as avg_sbp,
+min(sbp_ni) as min_sbp_ni,
+max(sbp_ni) as max_sbp_ni,
+avg(sbp_ni) as avg_sbp_ni
 from raw_bp
 group by 1,2,3
 )
