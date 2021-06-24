@@ -42,8 +42,11 @@ join age using (hadm_id)
 left join inpatient_stroke on cohort.stay_id = inpatient_stroke.stay_id
 where hadm_id not in (select distinct hadm_id from tpa)
 and hadm_id not in (SELECT DISTINCT hadm_id from tmb)
+and (edregtime is null) or (intime - edregtime <= interval '8' hour) -- only include "pure" stroke cases
+and med_time is null -- exclude inpatient_stroke
 -- and hadm_id not in (SELECT DISTINCT hadm_id from aspirin)
 -- and hadm_id not in (SELECT DISTINCT hadm_id from aspirin_pred)
 and age >= 18
 order by subject_id
 )
+-- need to exclude patients whose icu_intime is 24 hours later than the edregtime
